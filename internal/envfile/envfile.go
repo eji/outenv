@@ -2,8 +2,11 @@ package envfile
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
+
+	"github.com/eji/outenv/internal/crypto"
 )
 
 // Parse reads an env file and returns a map of key-value pairs.
@@ -16,6 +19,7 @@ func Parse(path string) (map[string]string, error) {
 	defer f.Close()
 
 	env := make(map[string]string)
+	var key []byte // lazy-loaded encryption key
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -26,10 +30,25 @@ func Parse(path string) (map[string]string, error) {
 		if idx < 0 {
 			continue
 		}
-		key := strings.TrimSpace(line[:idx])
+		k := strings.TrimSpace(line[:idx])
 		val := strings.TrimSpace(line[idx+1:])
 		val = unquote(val)
-		env[key] = val
+
+		if crypto.IsEncrypted(val) {
+			if key == nil {
+				var err error
+				key, err = crypto.LoadKey()
+				if err != nil {
+					return nil, fmt.Errorf("failed to load encryption key: %w", err)
+				}
+			}
+			val, err = crypto.Decrypt(key, val)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decrypt value for %s: %w", k, err)
+			}
+		}
+
+		env[k] = val
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err

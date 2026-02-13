@@ -13,6 +13,7 @@ Commands:
   init          Initialize env file for current directory
   edit          Edit env file for current directory
   export        Export merged environment variables
+  encrypt <value> Encrypt a value for use in env files
   hook <shell>  Print shell hook (bash, zsh, fish)
   _apply <shell> Apply environment changes (internal)
 `
@@ -31,6 +32,12 @@ func main() {
 		err = cmd.RunEdit()
 	case "export":
 		err = cmd.RunExport()
+	case "encrypt":
+		if len(os.Args) < 3 {
+			fmt.Fprintln(os.Stderr, "Usage: outenv encrypt <value>")
+			os.Exit(1)
+		}
+		err = cmd.RunEncrypt(os.Args[2])
 	case "hook":
 		if len(os.Args) < 3 {
 			fmt.Fprintln(os.Stderr, "Usage: outenv hook <shell>")

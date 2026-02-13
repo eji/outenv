@@ -11,6 +11,9 @@ import (
 const envTemplate = `# Add environment variables below, one per line.
 # Format: KEY=VALUE
 # Lines starting with # are comments.
+#
+# To encrypt a value: outenv encrypt "secret"
+# Then use the output: SECRET_KEY=ENC:base64...
 `
 
 func RunInit() error {

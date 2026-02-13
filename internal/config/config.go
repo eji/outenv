@@ -27,6 +27,15 @@ func EnvFilePath(absDir string) (string, error) {
 	return filepath.Join(dataDir, rel, "env"), nil
 }
 
+// KeyFilePath returns the path to the encryption key file: ~/.config/outenv/key
+func KeyFilePath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".config", "outenv", "key"), nil
+}
+
 // AncestorEnvFiles returns env file paths from root to the given directory,
 // only including paths where the env file actually exists.
 func AncestorEnvFiles(absDir string) ([]string, error) {
