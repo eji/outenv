@@ -6,17 +6,21 @@ import (
 	"strings"
 )
 
-// DataDir returns the base data directory: ~/.config/outenv/data
+// DataDir returns the base data directory for env files.
+// Uses $XDG_DATA_HOME/outenv if set, otherwise ~/.local/share/outenv.
 func DataDir() (string, error) {
+	if xdg := os.Getenv("XDG_DATA_HOME"); xdg != "" {
+		return filepath.Join(xdg, "outenv"), nil
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "outenv", "data"), nil
+	return filepath.Join(home, ".local", "share", "outenv"), nil
 }
 
 // EnvFilePath returns the env file path for the given absolute directory.
-// e.g. /Users/koji/project → ~/.config/outenv/data/Users/koji/project/env
+// e.g. /Users/koji/project → ~/.local/share/outenv/Users/koji/project/env
 func EnvFilePath(absDir string) (string, error) {
 	dataDir, err := DataDir()
 	if err != nil {
@@ -27,8 +31,12 @@ func EnvFilePath(absDir string) (string, error) {
 	return filepath.Join(dataDir, rel, "env"), nil
 }
 
-// KeyFilePath returns the path to the encryption key file: ~/.config/outenv/key
+// KeyFilePath returns the path to the encryption key file.
+// Uses $XDG_CONFIG_HOME/outenv/key if set, otherwise ~/.config/outenv/key.
 func KeyFilePath() (string, error) {
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "outenv", "key"), nil
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
